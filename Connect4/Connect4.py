@@ -1,3 +1,17 @@
+import json
+import os
+import datetime
+
+
+def log(msg):
+    # Logging message throughout the status of game with timestamp in front
+    folder = os.path.dirname(__file__)
+    file = os.path.join(folder, "c4_log.txt")
+    time_text = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(file, 'a') as fout:
+        fout.write(f'{time_text}: {msg} \n')
+
 def create_board():
     # Create a 6x7 Connect 4 board and initialise with None value
     board = [[None for _ in range(7)] for _ in range(6)]
@@ -9,7 +23,6 @@ def print_board(board):
         for cell in row:
             print('-' if cell is None else cell, end=" | ")
         print()
-
 
 def drop_piece(board, symbol, column):
     # This function sets the bottom row with player's symbol.
@@ -49,14 +62,16 @@ def main():
     symbols = ['X', 'O']
     active_player_index = 0
     last_player = active_player_index
+    log(f'It is {last_player}\'s turn')
+
     # Create an empty board
     board = create_board()
+    log('Board created')
 
     while not check_winner(board, symbols[last_player]):
         while True:
             try:
-                column = int(
-                    input(f"It is {players[active_player_index]}'s turn! Choose your column to drop your piece!: "))
+                column = int(input(f'It is {players[active_player_index]}\'s turn! Choose your column to drop your piece!: '))
                 if column < 8:
                     break  # Exit the loop if the input is valid and less than 7
                 else:
@@ -64,6 +79,8 @@ def main():
             except ValueError:
                 print("Invalid input! Please enter an integer.")
         board = drop_piece(board, symbols[active_player_index],column)
+        log(f'{players[active_player_index]} choose to drop piece at column {column}')
+
         print_board(board)
 
         # Store player index for checking wins before changing player
@@ -73,6 +90,7 @@ def main():
         active_player_index = (active_player_index + 1) % len(players)
 
     print(f'Player {players[last_player]} wins!')
+    log(f'Player {players[last_player]} wins!')
 
 if __name__ == '__main__':
     main()

@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="479d81c1-a97e-44af-84c8-d5b5b06b9109" name="Changes" comment="Initial commit&#10;Written the bulk of Connect4 game except implementing the winning algorithm">
-      <changelist_data name="chinyitan" email="ahchinmedes@hotmail.com" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Connect4/Connect4.py" afterDir="false" />
+    <list default="true" id="479d81c1-a97e-44af-84c8-d5b5b06b9109" name="Changes" comment="Edited the printing of winning player as the last commit printed the wrong winning player. &#10;Also added some details on checking winning scenario.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Connect4/Connect4.py" beforeDir="false" afterPath="$PROJECT_DIR$/Connect4/Connect4.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,20 +54,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.Connect4.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;test&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.Connect4.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "data__log__feature",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "vcs.Git",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Connect4" />
@@ -94,7 +92,7 @@
       <workItem from="1724977831260" duration="3159000" />
       <workItem from="1724981403151" duration="1658000" />
       <workItem from="1724983071577" duration="547000" />
-      <workItem from="1724983648428" duration="49000" />
+      <workItem from="1724983648428" duration="11915000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -112,7 +110,31 @@
       <option name="project" value="LOCAL" />
       <updated>1724978028933</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Initial commit&#10;Written the bulk of Connect4 game except implementing the winning algorithm">
+      <option name="closed" value="true" />
+      <created>1724983825176</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1724983825176</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Initial commit&#10;Written the bulk of Connect4 game except implementing the winning algorithm">
+      <option name="closed" value="true" />
+      <created>1724983954371</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1724983954371</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Edited the printing of winning player as the last commit printed the wrong winning player. &#10;Also added some details on checking winning scenario.">
+      <option name="closed" value="true" />
+      <created>1724989535711</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1724989535711</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -127,6 +149,26 @@
         <option value="Default.Subject" />
         <option value="GitHub.CommitStatus" />
       </list>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="HEAD" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="test" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
     </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -157,9 +199,10 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Revert &quot;Initial commit&quot;&#10;&#10;This reverts commit 995950ff3200f4639819375b7530f0391e430d7c." />
     <MESSAGE value="Initial commit&#10;Written the bulk of Connect4 game except implementing the winning algorithm" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit&#10;Written the bulk of Connect4 game except implementing the winning algorithm" />
+    <MESSAGE value="Edited the printing of winning player as the last commit printed the wrong winning player. &#10;Also added some details on checking winning scenario." />
+    <option name="LAST_COMMIT_MESSAGE" value="Edited the printing of winning player as the last commit printed the wrong winning player. &#10;Also added some details on checking winning scenario." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/LearningProjects$Connect4.coverage" NAME="Connect4 Coverage Results" MODIFIED="1724981629393" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Connect4" />
+    <SUITE FILE_PATH="coverage/LearningProjects$Connect4.coverage" NAME="Connect4 Coverage Results" MODIFIED="1725052210685" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Connect4" />
   </component>
 </project>
