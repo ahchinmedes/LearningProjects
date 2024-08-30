@@ -12,6 +12,13 @@ def log(msg):
     with open(file, 'a') as fout:
         fout.write(f'{time_text}: {msg} \n')
 
+def write_leaderboard():
+    """
+    TODO: Record winner into a leaderboard file to document the win and increase the
+    number of wins for the player if he is in the leaderboard previously.
+    :return:
+    """
+
 def create_board():
     # Create a 6x7 Connect 4 board and initialise with None value
     board = [[None for _ in range(7)] for _ in range(6)]
