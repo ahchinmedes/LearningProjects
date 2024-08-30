@@ -1,6 +1,7 @@
 import json
 import os
 import datetime
+import colorama
 
 
 def log(msg):
