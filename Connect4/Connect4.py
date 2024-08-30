@@ -1,8 +1,14 @@
 import json
 import os
 import datetime
-import colorama
+from colorama import Fore
 
+def print_welcome():
+    print(Fore.LIGHTCYAN_EX)
+    print("----------------------")
+    print("Welcome to Connect 4! ")
+    print("----------------------")
+    print(Fore.LIGHTYELLOW_EX)
 
 def log(msg):
     # Logging message throughout the status of game with timestamp in front
@@ -65,7 +71,7 @@ def check_winner(board, symbol):
 
 
 def main():
-    print('Welcome to Connect 4!')
+    print_welcome()
     players = ['Chin', 'Computer']
     symbols = ['X', 'O']
     active_player_index = 0
@@ -83,9 +89,12 @@ def main():
                 if column < 8:
                     break  # Exit the loop if the input is valid and less than 7
                 else:
-                    print("Please enter a number less than 7.")
+                    print(Fore.RED + "Please enter a number less than 7.")
+                    print(Fore.LIGHTYELLOW_EX)
             except ValueError:
-                print("Invalid input! Please enter an integer.")
+                print(Fore.RED + "Invalid input! Please enter an integer.")
+                print(Fore.LIGHTYELLOW_EX)
+
         board = drop_piece(board, symbols[active_player_index],column)
         log(f'{players[active_player_index]} choose to drop piece at column {column}')
 
