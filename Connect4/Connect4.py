@@ -18,17 +18,28 @@ def drop_piece(board, symbol, column):
             board[rows][column-1] = symbol
             break
         if rows == 0:
-            # Print error if trying to drop piece into top row
+            # Print error if trying to drop piece into top row and it's already filled
             print('This column is fully filled. Please choose another column.')
             break
     return board
 
 
-def check_winner(board):
+def check4(rows, symbol):
+    """
+    TODO: Implement the check
+    :param rows:
+    :param symbol:
+    :return: TRUE or FALSE
+    """
+    # This function is to check for 4 consecutive piece of the same symbol
+
+
+def check_winner(board, symbol):
     # This function checks for a winner. Returns true if there's a winner
     """
     TODO: Implement checking winning combination
     """
+
     return False
 
 
@@ -37,10 +48,11 @@ def main():
     players = ['Chin', 'Computer']
     symbols = ['X', 'O']
     active_player_index = 0
+    last_player = active_player_index
     # Create an empty board
     board = create_board()
 
-    while not check_winner(board):
+    while not check_winner(board, symbols[last_player]):
         while True:
             try:
                 column = int(
@@ -54,9 +66,13 @@ def main():
         board = drop_piece(board, symbols[active_player_index],column)
         print_board(board)
 
+        # Store player index for checking wins before changing player
+        last_player = active_player_index
+
         # Change player
         active_player_index = (active_player_index + 1) % len(players)
-        input('Paused')
+
+    print(f'Player {players[last_player]} wins!')
 
 if __name__ == '__main__':
     main()
