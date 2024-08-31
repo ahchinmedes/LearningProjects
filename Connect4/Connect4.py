@@ -1,7 +1,17 @@
 import json
 import os
 import datetime
+import sys
+from tabnanny import check
 
+from colorama import Fore
+
+def print_welcome():
+    print(Fore.LIGHTCYAN_EX)
+    print("----------------------")
+    print("Welcome to Connect 4! ")
+    print("----------------------")
+    print(Fore.LIGHTYELLOW_EX)
 
 def log(msg):
     # Logging message throughout the status of game with timestamp in front
@@ -32,72 +42,111 @@ def print_board(board):
         print()
 
 def drop_piece(board, symbol, column):
-    # This function sets the bottom row with player's symbol.
+    # This function sets the lowest valid row with player's symbol.
+    # Returns board status and the row selected for checking of winning sequence
+    selected_row = 999
     for rows in range(5,-1,-1):
-        if board[rows][column-1] == None:
-            board[rows][column-1] = symbol
+        if board[rows][column] == None:
+            board[rows][column] = symbol
+            selected_row = rows
             break
-        if rows == 0:
+        elif rows == 0:
             # Print error if trying to drop piece into top row and it's already filled
             print('This column is fully filled. Please choose another column.')
             break
-    return board
+
+    return board, selected_row
 
 
-def check4(rows, symbol):
-    """
-    TODO: Implement the check
-    :param rows:
-    :param symbol:
-    :return: TRUE or FALSE
-    """
-    # This function is to check for 4 consecutive piece of the same symbol
+def check4(row, col, dir_row, dir_col, board, symbol):
+    # This function is to check for 4 consecutive piece of the same symbol. Returns True if check pass
+    # print(f'Checking 4 consecutively {symbol}: {dir_row}:{dir_col}')
+    for i in range(1, 4):
+        # Calculate new position
+        new_row = row + i * dir_row
+        new_col = col + i * dir_col
 
+        # Check if the new position is out of bounds
+        if new_row < 0 or new_row >= len(board) or new_col < 0 or new_col >= len(board[0]):
+     #       print(f'Out of bounds - Position ({new_row}, {new_col})')
+            return False
 
-def check_winner(board, symbol):
+        # Check if the symbol matches
+        if board[new_row][new_col] != symbol:
+      #      print(f'Wrong symbol at ({new_row}, {new_col}): found {board[new_row][new_col]}, expected {symbol}')
+            return False
+
+    # If we pass all checks, return True
+    # print(f'Found 4 consecutive {symbol} starting at ({row}, {col}) in direction ({dir_row}, {dir_col})')
+    return True
+
+def check_winner(board, symbol, row, col):
     # This function checks for a winner. Returns true if there's a winner
-    """
-    TODO: Implement checking winning combination
-    """
 
+    print(f'Checking winner for row {row}, col {col}')
+    # Check vertical direction
+    if check4(row,col,1,0,board,symbol) or check4(row,col, -1,0,board,symbol):
+        return True
+    # Check horizontal direction
+    if check4(row,col,0,1,board,symbol) or check4(row,col, 0,-1,board,symbol):
+        return True
+    # Check \ direction
+    if check4(row, col, -1, -1, board, symbol) or check4(row, col, 1, 1, board, symbol):
+        return True
+    # Check / direction
+    if check4(row, col, 1, -1, board, symbol) or check4(row, col, -1, 1, board, symbol):
+        return True
     return False
 
 
 def main():
-    print('Welcome to Connect 4!')
+    print_welcome()
     players = ['Chin', 'Computer']
     symbols = ['X', 'O']
     active_player_index = 0
-    last_player = active_player_index
-    log(f'It is {last_player}\'s turn')
+    log(f'It is {players[active_player_index]}\'s turn')
 
     # Create an empty board
     board = create_board()
     log('Board created')
 
-    while not check_winner(board, symbols[last_player]):
-        while True:
+    while True:
+        # Initialise row and column for checking of winning sequence later
+        row = 999
+        column = 0
+        while row == 999:
+            # Get player's choice of column to drop piece. Print error message if invalid input
+            # Keep looping until there's a valid column chosen
             try:
                 column = int(input(f'It is {players[active_player_index]}\'s turn! Choose your column to drop your piece!: '))
                 if column < 8:
-                    break  # Exit the loop if the input is valid and less than 7
+                    # Minus 1 for list index
+                    column -= 1
                 else:
-                    print("Please enter a number less than 7.")
+                    print(Fore.RED + "Please enter a number less than 7.")
+                    print(Fore.LIGHTYELLOW_EX)
             except ValueError:
-                print("Invalid input! Please enter an integer.")
-        board = drop_piece(board, symbols[active_player_index],column)
-        log(f'{players[active_player_index]} choose to drop piece at column {column}')
+                print(Fore.RED + "Invalid input! Please enter an integer.")
+                print(Fore.LIGHTYELLOW_EX)
+            # Keep looping until valid row is selected
+            # Game will keep in loop if player selects a fully filled column
+            board, row = drop_piece(board, symbols[active_player_index], column)
 
-        print_board(board)
+        log(f'{players[active_player_index]} choose to drop piece at row {row} column {column+1}')
 
-        # Store player index for checking wins before changing player
-        last_player = active_player_index
-
-        # Change player
-        active_player_index = (active_player_index + 1) % len(players)
-
-    print(f'Player {players[last_player]} wins!')
-    log(f'Player {players[last_player]} wins!')
+        if not check_winner(board, symbols[active_player_index],row,column):
+            # No winner
+            # Print board for next turn
+            print_board(board)
+            # Change player
+            active_player_index = (active_player_index + 1) % len(players)
+        else:
+            # Player wins
+            print(Fore.GREEN + f'Player {players[active_player_index]} wins!')
+            log(f'Player {players[active_player_index]} wins!')
+            print_board(board)
+            # Exit game
+            break
 
 if __name__ == '__main__':
     main()
