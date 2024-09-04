@@ -5,7 +5,7 @@ import csv
 def print_welcome():
     print(Fore.LIGHTCYAN_EX)
     print("----------------------")
-    print("Welcome to Rock Paper Scissors!")
+    print("Welcome to Rock Paper Scissors 15-Way Edition!!")
     print("----------------------")
     print(Fore.LIGHTYELLOW_EX)
 
@@ -23,11 +23,11 @@ def read_roll(row: dict):
     del row['Attacker']
     return row
 
-def check_win():
-    '''
-    TODO: Need to implement the checks for wins.
-    :return:
-    '''
+def check_win(player_roll, computer_roll, win_table):
+    """
+    :return: "win" if player wins, "lose" if player loses, "draw" if player draws
+    """
+    return win_table[player_roll][computer_roll]
 
 class Player:
     def __init__(self, name, score):
@@ -41,6 +41,7 @@ def main():
     name = input("What is your name? ")
     player1 = Player(name,0)
     player2 = Player("Computer",0)
+    win = ""
 
     rounds = 5
     i = 0
@@ -50,40 +51,31 @@ def main():
         TODO: Need to print choices for player to choose, and also check for errors, before sending it to check for
         for winning scenario.
         '''
-        player_roll = input(f'Which roll do you want to play? [S]cissors, [R]ock [P]aper, {player1.name}  ')
-        if player_roll.lower() == 's':
-            print(f'You choose Scissors!')
-            win = scissors.check_win(computer_roll)
-        elif player_roll.lower() == 'r':
-            print(f'You choose Rock!')
-            win = rock.check_win(computer_roll)
-        elif player_roll.lower() == 'p':
-            print(f'You choose Paper!')
-            win = paper.check_win(computer_roll)
-        else:
-            # invalid input from player
-            print(f'Please select "S", "R", "P" only!')
+        player_roll = input(f'Which roll do you want to play, {player1.name}? Here are the options. Please key in the full string.\n{list(win_table.keys())}')
+        if player_roll.rstrip() not in list(win_table.keys()):
+            print(f'Invalid Option! Please try again.')
             continue
+        else:
+            print(f'Valid')
+            win = check_win(player_roll.rstrip(), computer_roll, win_table)
+            i += 1
 
         if win == "win":
             print(Fore.GREEN)
             print(f'You win! Computer played {computer_roll}')
             player1.score += 1
-            print(f'Score for Round {i+1} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
-            i += 1
+            print(f'Score for Round {i} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
             print(Fore.LIGHTYELLOW_EX)
         elif win == "lose":
             print(Fore.RED)
             print(f'You lose... Computer played {computer_roll}')
             player2.score += 1
-            print(f'Current score for Round {i+1} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
-            i += 1
+            print(f'Current score for Round {i} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
             print(Fore.LIGHTYELLOW_EX)
         else:
             print(Fore.BLUE)
             print(f'Its a tie! Computer played {computer_roll}')
-            print(f'Current score for Round {i+1} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
-            i += 1
+            print(f'Current score for Round {i} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
             print(Fore.LIGHTYELLOW_EX)
 
     # Print message for overall winner
