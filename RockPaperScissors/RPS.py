@@ -1,10 +1,5 @@
 import random
-from tkinter.font import names
-
 from colorama import Fore
-
-from Connect4.Connect4 import check_winner
-
 
 def print_welcome():
     print(Fore.LIGHTCYAN_EX)
