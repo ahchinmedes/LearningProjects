@@ -56,7 +56,6 @@ def main():
             print(f'Invalid Option! Please try again.')
             continue
         else:
-            print(f'Valid')
             win = check_win(player_roll.rstrip(), computer_roll, win_table)
             i += 1
 
