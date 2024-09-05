@@ -1,0 +1,209 @@
+Attacker,Opponent,Result,Action
+Rock,Fire,win,pounds out
+Fire,Rock,lose,is pounded out by
+Rock,Scissors,win,crushes
+Scissors,Rock,lose,is crushed by
+Rock,Snake,win,crushes
+Snake,Rock,lose,is crushed by
+Rock,Human,win,crushes
+Human,Rock,lose,is crushed by
+Rock,Wolf,win,crushes
+Wolf,Rock,lose,is crushed by
+Rock,Sponge,win,crushes
+Sponge,Rock,lose,is crushed by
+Rock,Tree,win,blocks growth of
+Tree,Rock,lose,has its growth blocked by
+Fire,Scissors,win,melts
+Scissors,Fire,lose,is melted by
+Fire,Paper,win,burns
+Paper,Fire,lose,is burned by
+Fire,Snake,win,burns
+Snake,Fire,lose,is burned by
+Fire,Human,win,burns
+Human,Fire,lose,is burned by
+Fire,Tree,win,burns
+Tree,Fire,lose,is burned by
+Fire,Wolf,win,burns
+Wolf,Fire,lose,is burned by
+Fire,Sponge,win,burns
+Sponge,Fire,lose,is burned by
+Scissors,Air,win,swishes through
+Air,Scissors,lose,is swished through by
+Scissors,Tree,win,carves
+Tree,Scissors,lose,is carved by
+Scissors,Paper,win,cuts
+Paper,Scissors,lose,is cut by
+Scissors,Snake,win,cuts
+Snake,Scissors,lose,is cut by
+Scissors,Human,win,cuts
+Human,Scissors,lose,is cut by
+Scissors,Wolf,win,cuts
+Wolf,Scissors,lose,is cut by
+Scissors,Sponge,win,cuts
+Sponge,Scissors,lose,is cut by
+Snake,Human,win,bites
+Human,Snake,lose,is bitten by
+Snake,Wolf,win,bites
+Wolf,Snake,lose,is bitten by
+Snake,Sponge,win,swallows
+Sponge,Snake,lose,is swallowed by
+Snake,Tree,win,nests in
+Tree,Snake,lose,is nested in by
+Snake,Paper,win,nests in
+Paper,Snake,lose,is nested in by
+Snake,Air,win,breathes
+Air,Snake,lose,is breathed by
+Snake,Water,win,drinks
+Water,Snake,lose,is drunk by
+Human,Tree,win,plants
+Tree,Human,lose,is planted by
+Human,Wolf,win,tames
+Wolf,Human,lose,is tamed by
+Human,Sponge,win,cleans with
+Sponge,Human,lose,is cleaned by
+Human,Paper,win,writes on
+Paper,Human,lose,is written on by
+Human,Air,win,breathes
+Air,Human,lose,is breathed by
+Human,Water,win,drinks
+Water,Human,lose,is drunk by
+Human,Dragon,win,slays
+Dragon,Human,lose,is slain by
+Tree,Wolf,win,shelters
+Wolf,Tree,lose,is sheltered by
+Tree,Dragon,win,shelters
+Dragon,Tree,lose,is sheltered by
+Tree,Sponge,win,outlives
+Sponge,Tree,lose,is outlived by
+Tree,Paper,win,becomes
+Paper,Tree,lose,is become by
+Tree,Air,win,produces
+Air,Tree,lose,is produced by
+Tree,Water,win,drinks
+Water,Tree,lose,is drunk by
+Tree,Devil,win,imprisons
+Devil,Tree,lose,is imprisoned by
+Wolf,Sponge,win,chews up
+Sponge,Wolf,lose,is chewed up by
+Wolf,Paper,win,chews up
+Paper,Wolf,lose,is chewed up by
+Wolf,Air,win,breathes
+Air,Wolf,lose,is breathed by
+Wolf,Water,win,drinks
+Water,Wolf,lose,is drunk by
+Wolf,Dragon,win,outruns
+Dragon,Wolf,lose,is outrun by
+Wolf,Lightning,win,outruns
+Lightning,Wolf,lose,is outrun by
+Wolf,Devil,win,bites
+Devil,Wolf,lose,is bitten by
+Sponge,Paper,win,soaks
+Paper,Sponge,lose,is soaked by
+Sponge,Air,win,uses air pockets
+Air,Sponge,lose,is used by
+Sponge,Water,win,absorbs
+Water,Sponge,lose,is absorbed by
+Sponge,Devil,win,cleanses
+Devil,Sponge,lose,is cleansed by
+Sponge,Dragon,win,cleanses
+Dragon,Sponge,lose,is cleansed by
+Sponge,Gun,win,cleans
+Gun,Sponge,lose,is cleaned by
+Sponge,Lightning,win,conducts
+Lightning,Sponge,lose,is conducted by
+Paper,Air,win,fans
+Air,Paper,lose,is fanned by
+Paper,Rock,win,covers
+Rock,Paper,lose,is covered by
+Paper,Water,win,floats on
+Water,Paper,lose,is floated on by
+Paper,Devil,win,rebukes
+Devil,Paper,lose,is rebuked by
+Paper,Dragon,win,rebukes
+Dragon,Paper,lose,is rebuked by
+Paper,Gun,win,outlaws
+Gun,Paper,lose,is outlawed by
+Paper,Lightning,win,defines
+Lightning,Paper,lose,is defined by
+Air,Fire,win,blows out
+Fire,Air,lose,is blown out by
+Air,Rock,win,erodes
+Rock,Air,lose,is eroded by
+Air,Water,win,evaporates
+Water,Air,lose,is evaporated by
+Air,Devil,win,chokes
+Devil,Air,lose,is choked by
+Air,Gun,win,tarnishes
+Gun,Air,lose,is tarnished by
+Air,Dragon,win,freezes
+Dragon,Air,lose,is frozen by
+Air,Lightning,win,creates
+Lightning,Air,lose,is created by
+Water,Devil,win,drowns
+Devil,Water,lose,is drowned by
+Water,Dragon,win,drowns
+Dragon,Water,lose,is drowned by
+Water,Rock,win,erodes
+Rock,Water,lose,is eroded by
+Water,Fire,win,puts out
+Fire,Water,lose,is put out by
+Water,Scissors,win,rusts
+Scissors,Water,lose,is rusted by
+Water,Gun,win,rusts
+Gun,Water,lose,is rusted by
+Water,Lightning,win,conducts
+Lightning,Water,lose,is conducted by
+Dragon,Devil,win,commands
+Devil,Dragon,lose,is commanded by
+Dragon,Lightning,win,breathes
+Lightning,Dragon,lose,is breathed by
+Dragon,Fire,win,breathes
+Fire,Dragon,lose,is breathed by
+Dragon,Rock,win,rests on
+Rock,Dragon,lose,is rested on by
+Dragon,Scissors,win,is immune to
+Scissors,Dragon,lose,is immune to
+Dragon,Gun,win,is immune to
+Gun,Dragon,lose,is immune to
+Dragon,Snake,win,spawns
+Snake,Dragon,lose,is spawned by
+Devil,Rock,win,hurls
+Rock,Devil,lose,is hurled by
+Devil,Fire,win,breathes
+Fire,Devil,lose,is breathed by
+Devil,Scissors,win,is immune to
+Scissors,Devil,lose,is immune to
+Devil,Gun,win,is immune to
+Gun,Devil,lose,is immune to
+Devil,Lightning,win,casts
+Lightning,Devil,lose,is cast by
+Devil,Snake,win,eats
+Snake,Devil,lose,is eaten by
+Devil,Human,win,possesses
+Human,Devil,lose,is possessed by
+Lightning,Gun,win,melts
+Gun,Lightning,lose,is melted by
+Lightning,Scissors,win,melts
+Scissors,Lightning,lose,is melted by
+Lightning,Rock,win,splits
+Rock,Lightning,lose,is split by
+Lightning,Tree,win,splits
+Tree,Lightning,lose,is split by
+Lightning,Fire,win,starts
+Fire,Lightning,lose,is started by
+Lightning,Snake,win,strikes
+Snake,Lightning,lose,is struck by
+Lightning,Human,win,strikes
+Human,Lightning,lose,is struck by
+Gun,Rock,win,target
+Rock,Gun,lose,is targeted by
+Gun,Tree,win,target
+Tree,Gun,lose,is targeted by
+Gun,Scissors,win,outclasses
+Scissors,Gun,lose,is outclassed by
+Gun,Snake,win,shoots
+Snake,Gun,lose,is shot by
+Gun,Human,win,shoots
+Human,Gun,lose,is shot by
+Gun,Wolf,win,shoots
+Wolf,Gun,lose,is shot by

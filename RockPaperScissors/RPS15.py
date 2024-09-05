@@ -11,23 +11,23 @@ def print_welcome():
 
 def read_rolls():
     win_table = {}
-    with open('battle-table.csv') as fin:
+    with open('battle-table-with-actions.csv') as fin:
         reader = csv.DictReader(fin)
         for row in reader:
-            key = row['Attacker']
-            win_table[key] = read_roll(row)
+            attacker = row['Attacker']
+            opponent = row['Opponent']
+            result = row['Result']
+            action = row['Action']
+            if attacker not in win_table:
+                win_table[attacker] = {}  # Initialize an empty dictionary for the attacker
+            win_table[attacker][opponent] = (action,result)
     return win_table
-
-def read_roll(row: dict):
-    # Delete Attacker key from dict
-    del row['Attacker']
-    return row
 
 def check_win(player_roll, computer_roll, win_table):
     """
     :return: "win" if player wins, "lose" if player loses, "draw" if player draws
     """
-    return win_table[player_roll][computer_roll]
+    return win_table[player_roll][computer_roll][1]
 
 class Player:
     def __init__(self, name, score):
@@ -61,19 +61,19 @@ def main():
 
         if win == "win":
             print(Fore.GREEN)
-            print(f'You win! Computer played {computer_roll}')
+            print(f'You win! Your {player_roll.rstrip()} {win_table[player_roll][computer_roll][0]} Computer\'s {computer_roll}')
             player1.score += 1
             print(f'Score for Round {i} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
             print(Fore.LIGHTYELLOW_EX)
         elif win == "lose":
             print(Fore.RED)
-            print(f'You lose... Computer played {computer_roll}')
+            print(f'You lose... Your {player_roll.rstrip()} {win_table[player_roll][computer_roll][0]} Computer\'s {computer_roll}')
             player2.score += 1
             print(f'Current score for Round {i} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
             print(Fore.LIGHTYELLOW_EX)
         else:
             print(Fore.BLUE)
-            print(f'Its a tie! Computer played {computer_roll}')
+            print(f'Its a tie! Computer played {computer_roll} too!')
             print(f'Current score for Round {i} is {player1.name}: {player1.score}... {player2.name}: {player2.score}')
             print(Fore.LIGHTYELLOW_EX)
 
