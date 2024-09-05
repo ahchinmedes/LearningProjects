@@ -27,7 +27,10 @@ def check_win(player_roll, computer_roll, win_table):
     """
     :return: "win" if player wins, "lose" if player loses, "draw" if player draws
     """
-    return win_table[player_roll][computer_roll][1]
+    if player_roll == computer_roll:
+        return 'draw'
+    else:
+        return win_table[player_roll][computer_roll][1]
 
 class Player:
     def __init__(self, name, score):
