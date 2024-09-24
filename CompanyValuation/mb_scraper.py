@@ -16,13 +16,13 @@ def clean_analyst_names(analyst_names):
    return cleaned_names
 
 def extract_price_targets(price_target):
-    '''
+    """
     This function extracts 2 numbers from the website.
     For example: $132 -> $140
     $132 will be stored as old price, $140 will be stored as new price.
     :param price_target:
     :return: old price, new price if found
-    '''
+    """
     match = re.match(r'\$(\d+(\.\d+)?) ➝ \$(\d+(\.\d+)?)', price_target)
     if match:
         old_price, new_price = match.groups()[0], match.groups()[2]
@@ -30,12 +30,12 @@ def extract_price_targets(price_target):
     return None, None
 
 def filter_after_earnings(df, date):
-    '''
+    """
     Filter the DataFrame for rows where 'Date' is after date
     :param df: contains all the historical earnings date
     :param date: most recent earnings date
     :return: filtered df
-    '''
+    """
     filtered_df = df[df['Date'] >= date]
     return filtered_df
 
@@ -89,12 +89,12 @@ def get_stock_forecast(ticker):
     return df
 
 def scrape_eps_estimates(ticker):
-    '''
-    This function scraps the website and returns the Headers
+    """
+    This function scraps the website and returns the
     Headers: ['Quarter', 'Number of Estimates', 'Low Estimate', 'High Estimate', 'Average Estimate', 'Company Guidance']
     :param ticker:
     :return:
-    '''
+    """
     # URL with the ticker as a variable
     url = f'https://www.marketbeat.com/stocks/NASDAQ/{ticker}/earnings/'
     # Send a GET request to the website
@@ -131,6 +131,24 @@ def scrape_eps_estimates(ticker):
     #print(df)
     return df
 
+def get_eps(ticker, year):
+    """
+    This function returns the full financial year projected EPS of a
+    given year and ticker from MarketBeat website
+    It will also remove "$" from the values
+    :param ticker: Ticker to query
+    :param year: Year to query
+    :return: Full financial year EPS
+    """
+    eps = scrape_eps_estimates(ticker)
+    # Filter the row where 'Quarter' equals 'FY ' + year
+    row = eps[eps['Quarter'] == f'FY {year}']
+    # Check if the row exists and return the Average Estimate
+    if not row.empty:
+        # Remove $ and return the digits only
+        return re.sub(r'\$', '',row['Average Estimate'].values[0])
+    else:
+        return None
 
 # Get the forecast data
 #forecast_df = get_stock_forecast('AMD')
