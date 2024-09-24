@@ -39,9 +39,9 @@ def filter_after_earnings(df, date):
     filtered_df = df[df['Date'] >= date]
     return filtered_df
 
-def get_stock_forecast(ticker):
+def get_stock(ticker,exchange):
     # Define the URL using the user input ticker
-    url = f'https://www.marketbeat.com/stocks/NASDAQ/{ticker}/forecast/'
+    url = f'https://www.marketbeat.com/stocks/{exchange}/{ticker}/forecast/'
     # Send a GET request to fetch the page content
     response = requests.get(url)
     # Check if the request was successful
@@ -49,17 +49,21 @@ def get_stock_forecast(ticker):
         print(f"Failed to retrieve data for {ticker}. Status code: {response.status_code}")
         return None
     # Parse the page content using BeautifulSoup
-    soup = BeautifulSoup(response.content, 'html.parser')
+    return BeautifulSoup(response.content, 'html.parser')
+    
+def get_stock_forecast(ticker):
+    soup = get_stock(ticker,'NASDAQ')
     # Find the section that starts with the "Recent Analyst Forecasts and Stock Ratings" heading
     ratings_table_section = soup.find('h2', {'id': 'ratings-table'})
     if not ratings_table_section:
-        print(f"No ratings table found for {ticker}")
-        return None
+        # No data found, try scraping another exchange url
+        soup = get_stock(ticker,'NYSE')
+        ratings_table_section = soup.find('h2', {'id': 'ratings-table'})
     # The table is typically located right after this section
     table = ratings_table_section.find_next('table', {'class': 'scroll-table'})
     if not table:
-        print(f"No forecast data found for {ticker}")
-        return None
+       print(f"No forecast data found for {ticker}")
+       return None
     # Extract table headers
     headers = [header.text.strip() for header in table.find_all('th')]
     # Extract table rows
@@ -150,6 +154,8 @@ def get_eps(ticker, year):
     else:
         return None
 
+#print(scrape_eps_estimates('AMZN'))
+#print(get_eps('AMZN','2024'))
 # Get the forecast data
 #forecast_df = get_stock_forecast('AMD')
 #print(forecast_df)
