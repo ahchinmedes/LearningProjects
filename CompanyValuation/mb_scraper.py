@@ -15,38 +15,53 @@ def clean_analyst_names(analyst_names):
        cleaned_names.append(name)
    return cleaned_names
 
+def extract_price_targets(price_target):
+    '''
+    This function extracts 2 numbers from the website.
+    For example: $132 -> $140
+    $132 will be stored as old price, $140 will be stored as new price.
+    :param price_target:
+    :return: old price, new price if found
+    '''
+    match = re.match(r'\$(\d+(\.\d+)?) ➝ \$(\d+(\.\d+)?)', price_target)
+    if match:
+        old_price, new_price = match.groups()[0], match.groups()[2]
+        return old_price, new_price
+    return None, None
+
+def filter_after_earnings(df, date):
+    '''
+    Filter the DataFrame for rows where 'Date' is after date
+    :param df: contains all the historical earnings date
+    :param date: most recent earnings date
+    :return: filtered df
+    '''
+    filtered_df = df[df['Date'] >= date]
+    return filtered_df
+
 def get_stock_forecast(ticker):
     # Define the URL using the user input ticker
     url = f'https://www.marketbeat.com/stocks/NASDAQ/{ticker}/forecast/'
-
     # Send a GET request to fetch the page content
     response = requests.get(url)
-
     # Check if the request was successful
     if response.status_code != 200:
         print(f"Failed to retrieve data for {ticker}. Status code: {response.status_code}")
         return None
-
     # Parse the page content using BeautifulSoup
     soup = BeautifulSoup(response.content, 'html.parser')
-
     # Find the section that starts with the "Recent Analyst Forecasts and Stock Ratings" heading
     ratings_table_section = soup.find('h2', {'id': 'ratings-table'})
-
     if not ratings_table_section:
         print(f"No ratings table found for {ticker}")
         return None
-
     # The table is typically located right after this section
     table = ratings_table_section.find_next('table', {'class': 'scroll-table'})
-
     if not table:
         print(f"No forecast data found for {ticker}")
         return None
-
     # Extract table headers
     headers = [header.text.strip() for header in table.find_all('th')]
-
     # Extract table rows
     rows = []
     for row in table.find_all('tr')[1:]:  # Skip the header row
@@ -56,27 +71,80 @@ def get_stock_forecast(ticker):
 
     # Create a DataFrame from the table data
     df = pd.DataFrame(rows, columns=headers)
-
-    # Clean and filter the "Date" column for valid dates in 2024
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', format='%m/%d/%Y')
-
-    # Filter for dates in the year 2024
-    df = df[df['Date'].dt.year == 2024]
+    
+    # Data Cleaning Section
     # Apply the cleaning function to 'Analyst Name' column
+    df['Analyst Name'] = df['Analyst Name'].fillna('')
+    df['Brokerage'] = df['Brokerage'].fillna('')
+    df['Price Target'] = df['Price Target'].fillna('')
     df['Analyst Name'] = clean_analyst_names(df['Analyst Name'])
     df['Brokerage'] = clean_analyst_names(df['Brokerage'])
+    #Convert 'Date' to datetime, invalid parsing will result in NaT
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    #Remove rows with invalid dates (NaT)
+    df = df[df['Date'].notna()]
+    df['Old Price Target'] = None
+    # Apply the extraction function to 'Price Target' column
+    df[['Old Price Target', 'Price Target']] = df['Price Target'].apply(lambda x: pd.Series(extract_price_targets(x)))
+    return df
 
+def scrape_eps_estimates(ticker):
+    '''
+    This function scraps the website and returns the Headers
+    Headers: ['Quarter', 'Number of Estimates', 'Low Estimate', 'High Estimate', 'Average Estimate', 'Company Guidance']
+    :param ticker:
+    :return:
+    '''
+    # URL with the ticker as a variable
+    url = f'https://www.marketbeat.com/stocks/NASDAQ/{ticker}/earnings/'
+    # Send a GET request to the website
+    response = requests.get(url)
+    # Check if request was successful
+    if response.status_code != 200:
+        print(f"Failed to retrieve data for {ticker}. Status code: {response.status_code}")
+        return
+    # Parse the page content
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # Find the specific section by locating the h2 tag with the class 'h3' and the desired title
+    section = soup.find('h2', class_='h3', string=lambda text: 'Analyst EPS Estimates' in text)
+    if not section:
+        print(f"No EPS estimates section found for {ticker}")
+        return
+    # Find the table that comes after the section
+    table = section.find_next('table')
+    if not table:
+        print(f"No table found under EPS estimates for {ticker}")
+        return
+    # Extract the headers from the table
+    headers = [th.get_text(strip=True) for th in table.find_all('th')]
+    #print("Headers:", headers)
+    # Extract the rows from the table
+    rows = []
+    for row in table.find_all('tr')[1:]:  # Skipping the header row
+        columns = row.find_all('td')
+        data = [col.get_text(strip=True) for col in columns]
+        rows.append(data)
+    # Create a pandas DataFrame from the scraped data
+    df = pd.DataFrame(rows, columns=headers)
+    # Print or return the DataFrame for further processing
+    #print(df[['Quarter','Average Estimate','Company Guidance']])
+    #print(df)
     return df
 
 
-# Ask the user for a stock ticker
-ticker = input("Enter a company stock ticker: ").upper()
-
 # Get the forecast data
-forecast_df = get_stock_forecast(ticker)
-
+#forecast_df = get_stock_forecast('AMD')
+#print(forecast_df)
+#forecast_df.to_csv(f'AMD_forecast.csv', index=False)
+'''
 # Display the DataFrame if the data was found
 if forecast_df is not None:
-    print(forecast_df)
+    #filtered_df = filter_after_earnings(forecast_df, earnings)
+    #print(forecast_df)
+    print(filtered_df[['Date', 'Old Price Target', 'Price Target']])
+    prices = pd.to_numeric(filtered_df['Price Target'], errors='coerce')
+    print(f"Median of Price Target: {prices.dropna().median()}")
+
     # You can also save the DataFrame to a CSV file if needed
-    forecast_df.to_csv(f'{ticker}_forecast.csv', index=False)
+   # filtered_df.to_csv(f'{ticker}_forecast.csv', index=False)
+'''
