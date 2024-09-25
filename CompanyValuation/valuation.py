@@ -1,34 +1,11 @@
 import csv
-import requests
 import mb_scraper as mb
+import alpha_api as alpha
+import finviz_scraper as finviz
 import pandas as pd
 import datetime
 
-def get_future_earnings_date():
-    # replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
-    CSV_URL = 'https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&horizon=3month&apikey=LCQXGOLSHVGOGRKF'
-    my_tickers = ['AMD','NVDA','AAPL','AMZN','GOOGL']
-    with requests.Session() as s:
-        download = s.get(CSV_URL)
-        decoded_content = download.content.decode('utf-8')
-        cr = csv.reader(decoded_content.splitlines(), delimiter=',')
-        # returns values in this header ['symbol', 'name', 'reportDate', 'fiscalDateEnding', 'estimate', 'currency']
-        my_list = list(cr)
-        for row in my_list:
-          if row[0] in my_tickers:
-            print(row)
 
-def get_earnings_data(ticker):
-    url = f'https://www.alphavantage.co/query?function=EARNINGS&symbol={ticker}&apikey=LCQXGOLSHVGOGRKF'
-    r = requests.get(url)
-    data = r.json()
-    return data
-
-def get_ratios(ticker):
-    url = f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}&apikey=LCQXGOLSHVGOGRKF'
-    r = requests.get(url)
-    data = r.json()
-    return data
 
 def get_last_earnings_date(data):
     '''
@@ -44,7 +21,7 @@ def get_last_earnings_date(data):
     # Convert it back to a string
     return last_earnings_date
 
-def calc_future_eps(ticker, earnings):
+def calc_future_eps(ticker, earnings, finviz_data):
     """
     
     :param ticker: Ticker to calculate
@@ -56,16 +33,25 @@ def calc_future_eps(ticker, earnings):
     last_year = str(datetime.datetime.now().year - 1)
     for item in earnings['annualEarnings']:
         if last_year in item['fiscalDateEnding']:
-           eps.append(item['reportedEPS'])
+           eps.append(float(item['reportedEPS']))
+           
     # Set Year 1 and Year 2 EPS projected value from Market Beat
-    eps.append(mb.get_eps(ticker,int(last_year)+1))
-    eps.append(mb.get_eps(ticker,int(last_year)+2))
+    eps.extend([float(mb.get_eps(ticker, int(last_year) + i)) for i in range(1, 3)])
+    
+    # Compute eps for year 4 to 6 by multiplying year 3 with eps growth rate
+    eps_growth = 1+finviz.get_value(finviz_data,'EPS next 5Y')/100
+    print(f'5Y EPS Growth: {eps_growth:2f}')
+    eps.extend([round(eps[2] * eps_growth**(i+1), 2) for i in range(3)])
     print(eps)
-# TODO: Implement EPS calculations for Year 3,4 and 5
+    pe = float(finviz.get_value(finviz_data,'P/E'))
+    print(f'Current P/E: {pe}')
+    price_forecast = [round(e * pe,2) for e in eps]
+    print(price_forecast)
+    print(f'Max Buy Price: $ {price_forecast[2]/1.3:.2f}')
 
 ticker = input(f'Which ticker do you want to check?')
 column_list = ['Date','Brokerage','Old Price Target','Price Target']
-earnings_list = get_earnings_data(ticker)
+earnings_list = alpha.get_earnings_data(ticker)
 #print(earnings_list)
 # Filter the analyst forecasts that are after last earnings date
 analyst_forecast = mb.get_stock_forecast(ticker)
@@ -75,10 +61,12 @@ analyst_forecast = mb.filter_after_earnings(analyst_forecast,get_last_earnings_d
 analyst_forecast['Price Target'] = pd.to_numeric(analyst_forecast['Price Target'], errors='coerce')
 median_price_target = analyst_forecast['Price Target'].median()
 print(f"{ticker} Median Price Target: {median_price_target}")
-print(f'Max buy price based on 15%pa for 3 years: ${median_price_target/(1.15**3):.2f}')
+print(f'Max buy price based on 15%pa for 3 years: ${median_price_target/(1.15**3):.2f}\n')
+
 print(analyst_forecast[column_list])
 
-calc_future_eps(ticker, earnings_list)
+finviz_data = finviz.scrape_finviz_data(ticker)
+calc_future_eps(ticker, earnings_list,finviz_data)
 
-ratio = get_ratios(ticker)
-print(ratio['TrailingPE'])
+# ratio = get_ratios(ticker)
+# print(ratio['TrailingPE'])

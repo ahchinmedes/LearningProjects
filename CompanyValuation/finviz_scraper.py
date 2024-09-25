@@ -1,7 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import re
 
+def store_csv(df,ticker):
+    # Define the filename
+    filename = f'{ticker}_finviz.csv'
+    # Save DataFrame to CSV file
+    df.to_csv(filename, index=False)
+    #print(f"Data saved to {filename}")
 
 def scrape_finviz_data(ticker):
     # URL with the ticker as a variable
@@ -49,20 +56,23 @@ def scrape_finviz_data(ticker):
 
     # Create a DataFrame from the dictionary
     df = pd.DataFrame([values], columns=headers)
-
+    df_csv = pd.DataFrame({'Header': headers, 'Value': values})
+    store_csv(df_csv, ticker)
+    
     # Print or return the DataFrame for further processing
     # print(df)
     
-    # Define the filename
-    filename = f'{ticker}_finviz.csv'
-    # Save DataFrame to CSV file
-    df.to_csv(filename, index=False)
-    
     return df
 
+def get_value(df, key):
+    value = df[key].values[0]
+    # remove % from string if present
+    value = re.sub(r'%',"",value)
+    return float(value)
+    
 
 # Example usage
-ticker = 'AMZN'  # Replace with any ticker symbol
-df = scrape_finviz_data(ticker)
+#ticker = 'BABA'  # Replace with any ticker symbol
+#df = scrape_finviz_data(ticker)
 #print(df['EPS next 5Y'].values[0])
 #print(df)
