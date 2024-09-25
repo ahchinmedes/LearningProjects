@@ -39,9 +39,16 @@ def filter_after_earnings(df, date):
     filtered_df = df[df['Date'] >= date]
     return filtered_df
 
-def get_stock(ticker,exchange):
+def get_soup(ticker,exchange,type):
+    """
+    This function returns the Soup object after pinging the Marketbeat website
+    :param ticker: Stock ticker to query
+    :param exchange: Exchange for ticker
+    :param type: website page. Can be forecast, earnings, etc
+    :return: Soup object
+    """
     # Define the URL using the user input ticker
-    url = f'https://www.marketbeat.com/stocks/{exchange}/{ticker}/forecast/'
+    url = f'https://www.marketbeat.com/stocks/{exchange}/{ticker}/{type}/'
     # Send a GET request to fetch the page content
     response = requests.get(url)
     # Check if the request was successful
@@ -52,12 +59,12 @@ def get_stock(ticker,exchange):
     return BeautifulSoup(response.content, 'html.parser')
     
 def get_stock_forecast(ticker):
-    soup = get_stock(ticker,'NASDAQ')
+    soup = get_soup(ticker,'NASDAQ','forecast')
     # Find the section that starts with the "Recent Analyst Forecasts and Stock Ratings" heading
     ratings_table_section = soup.find('h2', {'id': 'ratings-table'})
     if not ratings_table_section:
         # No data found, try scraping another exchange url
-        soup = get_stock(ticker,'NYSE')
+        soup = get_soup(ticker,'NYSE','forecast')
         ratings_table_section = soup.find('h2', {'id': 'ratings-table'})
     # The table is typically located right after this section
     table = ratings_table_section.find_next('table', {'class': 'scroll-table'})
@@ -94,26 +101,19 @@ def get_stock_forecast(ticker):
 
 def scrape_eps_estimates(ticker):
     """
-    This function scraps the website and returns the
-    Headers: ['Quarter', 'Number of Estimates', 'Low Estimate', 'High Estimate', 'Average Estimate', 'Company Guidance']
-    :param ticker:
-    :return:
+    This function scraps the Marketbeat website for earnings estimates
+    Sample data
+        Headers: ['Quarter', 'Number of Estimates', 'Low Estimate', 'High Estimate', 'Average Estimate', 'Company Guidance']
+    :param ticker: Stock to query
+    :return: Dataframe with the scraped data
     """
-    # URL with the ticker as a variable
-    url = f'https://www.marketbeat.com/stocks/NASDAQ/{ticker}/earnings/'
-    # Send a GET request to the website
-    response = requests.get(url)
-    # Check if request was successful
-    if response.status_code != 200:
-        print(f"Failed to retrieve data for {ticker}. Status code: {response.status_code}")
-        return
-    # Parse the page content
-    soup = BeautifulSoup(response.content, 'html.parser')
+    soup = get_soup(ticker,'NASDAQ','earnings')
     # Find the specific section by locating the h2 tag with the class 'h3' and the desired title
     section = soup.find('h2', class_='h3', string=lambda text: 'Analyst EPS Estimates' in text)
     if not section:
-        print(f"No EPS estimates section found for {ticker}")
-        return
+        # No data found, trying scraping another exchange url
+        soup = get_soup(ticker, 'NYSE', 'earnings')
+        section = soup.find('h2', class_='h3', string=lambda text: 'Analyst EPS Estimates' in text)
     # Find the table that comes after the section
     table = section.find_next('table')
     if not table:
@@ -154,10 +154,10 @@ def get_eps(ticker, year):
     else:
         return None
 
-#print(scrape_eps_estimates('AMZN'))
+#print(scrape_eps_estimates('BABA'))
 #print(get_eps('AMZN','2024'))
 # Get the forecast data
-#forecast_df = get_stock_forecast('AMD')
+#forecast_df = get_stock_forecast('BABA')
 #print(forecast_df)
 #forecast_df.to_csv(f'AMD_forecast.csv', index=False)
 '''
