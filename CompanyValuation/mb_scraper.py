@@ -4,15 +4,16 @@ import pandas as pd
 import re
 
 
-def clean_analyst_names(analyst_names):
+def clean_field(field):
    cleaned_names = []
-   for name in analyst_names:
+   for row in field:
        # Remove "x of 5 stars" if found
-       name = re.sub(r'\s*\d+ of \d+ stars', '', name)
+       row = re.sub(r'\s*\d+ of \d+ stars', '', row)
        # Remove "Subscribe" and anything following it
-       name = re.sub(r'\s*Subscribe.*', '', name).strip()
+       row = re.sub(r'\s*Subscribe.*', '', row).strip()
+       row = re.sub(r'\s*Get the.*', '', row).strip()
        # Append the cleaned name
-       cleaned_names.append(name)
+       cleaned_names.append(row)
    return cleaned_names
 
 def extract_price_targets(price_target):
@@ -36,6 +37,7 @@ def filter_after_earnings(df, date):
     :param date: most recent earnings date
     :return: filtered df
     """
+    df['Date'] = pd.to_datetime(df['Date'],format='%d/%m/%Y')
     filtered_df = df[df['Date'] >= date]
     return filtered_df
 
@@ -84,19 +86,22 @@ def get_stock_forecast(ticker):
     df = pd.DataFrame(rows, columns=headers)
     
     # Data Cleaning Section
-    # Apply the cleaning function to 'Analyst Name' column
+    #Convert 'Date' to datetime, invalid parsing will result in NaT
+    df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
+    # Remove rows with invalid dates (NaT)
+    df = df[df['Date'].notna()]
+    
+    # Apply the cleaning function to 'Analyst Name' and 'Brokerage' column
     df['Analyst Name'] = df['Analyst Name'].fillna('')
     df['Brokerage'] = df['Brokerage'].fillna('')
-    df['Price Target'] = df['Price Target'].fillna('')
-    df['Analyst Name'] = clean_analyst_names(df['Analyst Name'])
-    df['Brokerage'] = clean_analyst_names(df['Brokerage'])
-    #Convert 'Date' to datetime, invalid parsing will result in NaT
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    #Remove rows with invalid dates (NaT)
-    df = df[df['Date'].notna()]
+    df['Analyst Name'] = clean_field(df['Analyst Name'])
+    df['Brokerage'] = clean_field(df['Brokerage'])
+    
+    # Apply the extraction function to 'Price Target' column and remove rows with no forecast price
     df['Old Price Target'] = None
-    # Apply the extraction function to 'Price Target' column
     df[['Old Price Target', 'Price Target']] = df['Price Target'].apply(lambda x: pd.Series(extract_price_targets(x)))
+    df = df[df['Old Price Target'].notna()]
+    
     return df
 
 def scrape_eps_estimates(ticker):
