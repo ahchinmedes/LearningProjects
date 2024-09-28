@@ -3,8 +3,10 @@ import mb_scraper as mb
 import alpha_api as alpha
 import finviz_scraper as fv
 import pandas as pd
-from _datetime import datetime
+from datetime import datetime
 import generate_pdf as p
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def get_last_earnings_date(data):
     """
@@ -32,6 +34,11 @@ def calc_future_eps():
     :param earnings: Earnings data from Alpha Vantage API
     :return:
     """
+    # TODO: Use low and average pe values stored in user preference json file if available. Using
+    #  hard coded values for now
+    low_pe = 15
+    ave_pe = 20
+    
     eps = []
     # Get last year reported EPS from Alpha Vantage API and store as eps[0]
     last_year = str(datetime.now().year - 1)
@@ -47,17 +54,49 @@ def calc_future_eps():
     print(eps)
     pe = float(fv.get_value(fv_data,'P/E'))
     print(f'Current P/E: {pe}')
-    price_forecast = [round(e * pe,2) for e in eps]
-    price_forecast[0] = current_price
-    print(price_forecast)
+    current_pe_forecast = [round(e * pe,2) for e in eps]
+    current_pe_forecast[0] = current_price
+    print(current_pe_forecast)
+    ## compute low and average PE forecast
+    low_pe_forecast = [round(current_pe_forecast[i]/pe*low_pe,2) for i in range(6)]
+    low_pe_forecast[0] = current_price
+    ave_pe_forecast = [round(current_pe_forecast[i]/pe*ave_pe,2) for i in range(6)]
+    ave_pe_forecast[0] = current_price
+    ## Plot forecast chart
+    plot_chart(current_pe_forecast,low_pe_forecast, ave_pe_forecast, pe, low_pe, ave_pe)
     # Assuming holding 2 years at 15% pa, ie divide by 30%
-    print(f'Max Buy Price: $ {price_forecast[2]/1.3:.2f}')
+    print(f'Max Buy Price: $ {current_pe_forecast[2]/1.3:.2f}')
     
 def generate_pdf():
     p.print_fundamentals(pdf, current_price,fv_data['P/E'].values[0], fv_data['EPS next 5Y'].values[0])
     p.save_pdf(pdf)
 
-
+def plot_chart(current_pe_price, low_pe_price, ave_pe_price, current_pe, low_pe, ave_pe):
+    x_values = ['Year 0', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5']
+    # Create a Seaborn line plot
+    sns.set_theme(style='whitegrid')
+    sns.lineplot(x=x_values, y=current_pe_price, marker='o', color='blue', markersize=7, label=f'Current PE ({current_pe})', legend='full')
+    sns.lineplot(x=x_values, y=low_pe_price, marker='o', color='cyan', markersize=7, label=f'Lowest PE ({low_pe})', legend='full')
+    sns.lineplot(x=x_values, y=ave_pe_price, marker='o', color='green', markersize=7, label=f'Average PE ({ave_pe})', legend='full')
+    # Set y-axis to start at 0
+    plt.ylim(0, max(max(current_pe_price),max(low_pe_price),max(ave_pe_price))*1.10)
+    # Annotate the y-values at each data point
+    for i, value in enumerate(current_pe_price):
+        plt.text(x=i, y=value*1.05, s=f"${value:.2f}", ha='center', fontsize=8)
+    for i, value in enumerate(ave_pe_price):
+        plt.text(x=i, y=value*1.05, s=f"${value:.2f}", ha='center', fontsize=8)
+    for i, value in enumerate(low_pe_price):
+        plt.text(x=i, y=value*1.05, s=f"${value:.2f}", ha='center', fontsize=8)
+    # Add labels and Title
+    plt.xlabel("Year")
+    plt.ylabel("Stock Price")
+    plt.title(f'{ticker} Price Forecast')
+    plt.legend(loc='lower right', fontsize=10)  # Ensure the legend is shown
+    # Save the plot to a file
+    plt.savefig(f'Reports/{ticker}_price_forecast.png', dpi=300, bbox_inches='tight')  # Save as PNG file
+    
+    # Show plot
+    #plt.show()
 
 
 ticker = input(f'Which ticker do you want to check?')

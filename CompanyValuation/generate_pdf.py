@@ -50,14 +50,15 @@ def print_fundamentals(pdf,price, pe, growth):
     pdf.drawString(50, 640, f'Current growth rate: {growth}')
 
 def print_analyst_buy(pdf, mb, earning_date, median, mbp):
+    ## Print Header
     pdf.drawString(50, 570, 'Analyst Price Target')
     text_width = pdf.stringWidth('Analyst Price Target', 'Helvetica', 14)
     pdf.line(50, 565, 50+text_width, 565)
-    
-    mb['Date'] = mb['Date'].dt.strftime('%d/%m/%Y')
-    mb.loc[:,'Price Target'] = mb['Price Target'].apply(lambda x: f'${x}')
-    mb.loc[:,'Old Price Target'] = mb['Old Price Target'].apply(lambda x: f'${x}')
-    table = Table([mb.columns.tolist()] + mb.values.tolist())
+    mb_pdf = mb.copy()
+    mb_pdf['Date'] = mb_pdf['Date'].dt.strftime('%d/%m/%Y')
+    mb_pdf['Price Target'] = mb_pdf['Price Target'].apply(lambda x: f'${float(x):.0f}')
+    mb_pdf['Old Price Target'] = mb_pdf['Old Price Target'].apply(lambda x: f'${float(x):.0f}')
+    table = Table([mb_pdf.columns.tolist()] + mb_pdf.values.tolist())
     # Define the table style, setting a light green background for the header row
     style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgreen),  # Header background
@@ -78,7 +79,7 @@ def print_analyst_buy(pdf, mb, earning_date, median, mbp):
 
 
 def create_pdf(ticker):
-    pdf = canvas.Canvas(f'Output_Files/{ticker}_valuation_report.pdf',bottomup=1)
+    pdf = canvas.Canvas(f'Reports/{ticker}_valuation_report.pdf',bottomup=1)
     create_gridlines(pdf)
     pdf.showPage()
     print_report_header(pdf,ticker)
