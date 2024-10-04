@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import re
 
-
 def clean_field(field):
    cleaned_names = []
    for row in field:
@@ -55,7 +54,7 @@ def get_soup(ticker,exchange,type):
     response = requests.get(url)
     # Check if the request was successful
     if response.status_code != 200:
-        print(f"Failed to retrieve data for {ticker}. Status code: {response.status_code}")
+        print(f"Market Beat: Failed to retrieve data for {ticker}. Status code: {response.status_code}")
         return None
     # Parse the page content using BeautifulSoup
     return BeautifulSoup(response.content, 'html.parser')
@@ -71,7 +70,7 @@ def get_stock_forecast(ticker):
     # The table is typically located right after this section
     table = ratings_table_section.find_next('table', {'class': 'scroll-table'})
     if not table:
-       print(f"No forecast data found for {ticker}")
+       print(f"Market Beat: No forecast data found for {ticker}")
        return None
     # Extract table headers
     headers = [header.text.strip() for header in table.find_all('th')]
@@ -101,7 +100,8 @@ def get_stock_forecast(ticker):
     df['Old Price Target'] = None
     df[['Old Price Target', 'Price Target']] = df['Price Target'].apply(lambda x: pd.Series(extract_price_targets(x)))
     df = df[df['Old Price Target'].notna()]
-    
+    df['Old Price Target'] = df['Old Price Target'].astype('float')
+    df['Price Target'] = df['Price Target'].astype('float')
     return df
 
 def scrape_eps_estimates(ticker):
@@ -122,11 +122,10 @@ def scrape_eps_estimates(ticker):
     # Find the table that comes after the section
     table = section.find_next('table')
     if not table:
-        print(f"No table found under EPS estimates for {ticker}")
+        print(f"Market Beat: No table found under EPS estimates for {ticker}")
         return
     # Extract the headers from the table
     headers = [th.get_text(strip=True) for th in table.find_all('th')]
-    #print("Headers:", headers)
     # Extract the rows from the table
     rows = []
     for row in table.find_all('tr')[1:]:  # Skipping the header row
@@ -135,9 +134,10 @@ def scrape_eps_estimates(ticker):
         rows.append(data)
     # Create a pandas DataFrame from the scraped data
     df = pd.DataFrame(rows, columns=headers)
-    # Print or return the DataFrame for further processing
-    #print(df[['Quarter','Average Estimate','Company Guidance']])
-    #print(df)
+    
+    # Data cleaning
+    df['Average Estimate'] = df['Average Estimate'].replace({r'\$': '', '': 0}, regex=True)
+    df['Average Estimate'] = df['Average Estimate'].astype('float')
     return df
 
 def get_eps(ticker, year):
@@ -154,26 +154,14 @@ def get_eps(ticker, year):
     row = eps[eps['Quarter'] == f'FY {year}']
     # Check if the row exists and return the Average Estimate
     if not row.empty:
-        # Remove $ and return the digits only
-        return re.sub(r'\$', '',row['Average Estimate'].values[0])
+        # Return 5th column (Average Estimate) from row data
+        return row.iloc[0,4]
     else:
         return None
 
-#print(scrape_eps_estimates('BABA'))
-#print(get_eps('AMZN','2024'))
-# Get the forecast data
-#forecast_df = get_stock_forecast('BABA')
-#print(forecast_df)
-#forecast_df.to_csv(f'AMD_forecast.csv', index=False)
-'''
-# Display the DataFrame if the data was found
-if forecast_df is not None:
-    #filtered_df = filter_after_earnings(forecast_df, earnings)
-    #print(forecast_df)
-    print(filtered_df[['Date', 'Old Price Target', 'Price Target']])
-    prices = pd.to_numeric(filtered_df['Price Target'], errors='coerce')
-    print(f"Median of Price Target: {prices.dropna().median()}")
+def main():
+ #print(scrape_eps_estimates('BABA'))
+ print(get_eps('AMZN','2024'))
 
-    # You can also save the DataFrame to a CSV file if needed
-   # filtered_df.to_csv(f'{ticker}_forecast.csv', index=False)
-'''
+if __name__ == '__main__':
+    main()
