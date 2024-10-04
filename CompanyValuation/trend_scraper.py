@@ -3,6 +3,50 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
+import json
+from datetime import datetime
+import os
+
+
+def save_data_to_local(data, ticker):
+	# Define file path for the local JSON data
+	file_path = f'Output_Files/{ticker}/{ticker}_mb_pe.json'
+	
+	# Convert DataFrame to JSON string
+	data['Date'] = data['Date'].dt.strftime('%Y-%m-%d')  # Convert 'Date' to ISO format
+	data_dict = data.to_dict(orient='records')
+	
+	# Create a dictionary with queryDate and JSON data
+	output_data = {
+		'queryDate': datetime.today().strftime('%Y-%m-%d'),
+		'data': data_dict
+	}
+	
+	# Save the data to a local JSON file with the query date
+	# Define file path for the local JSON data
+	with open(file_path, 'w') as fout:
+		json.dump(output_data, fout)
+	print(f"MacroTrend: PE data for {ticker} has been updated and saved.")
+
+def check_file_exist(ticker):
+	# Define file path for the local JSON data
+	file_path = f'Output_Files/{ticker}/{ticker}_mb_pe.json'
+	if os.path.exists(file_path):
+		# Open file if file exist
+		with open(file_path, 'r') as f:
+			local_data = json.load(f)
+			# Check the date of the last query
+			last_query_date = local_data.get('queryDate')
+			if last_query_date:
+				last_query_date = datetime.strptime(last_query_date, '%Y-%m-%d')
+				today = datetime.today()
+				# If the data is from the same month and year, return the local data
+				if last_query_date.year == today.year and last_query_date.month == today.month:
+					print(f"MacroTrend Scraper: Using cached data for {ticker}")
+					return local_data['data']
+	# File not exist or not last query not in this month
+	print(f'No existing data found for MacroTrend PE')
+	return None
 
 def get_soup(ticker):
 	"""
@@ -19,7 +63,8 @@ def get_soup(ticker):
 		'Connection': 'keep-alive',
 		'Upgrade-Insecure-Requests': '1',
 	}
-	url_maker = {'GOOGL':'alphabet','MSFT':'microsoft', 'AMZN':'amazon','AMD':'amd','PLTR':'palantir-technologies'}
+	url_maker = {'GOOGL': 'alphabet', 'MSFT': 'microsoft', 'AMZN': 'amazon', 'AMD': 'amd',
+				 'PLTR': 'palantir-technologies'}
 	# Define the URL using the user input ticker
 	url = f'https://www.macrotrends.net/stocks/charts/{ticker}/{url_maker.get(ticker)}/pe-ratio'
 	# Send a GET request to fetch the page content
@@ -37,26 +82,31 @@ def scrape_pe(ticker):
 	:param ticker:
 	:return: DataFrame storing all the PE information from website
 	"""
+	# Check if the file already exists
+	data = check_file_exist(ticker)
+	if data is not None:
+		# Existing recent data found
+		df = pd.DataFrame(data)
+		df['Date'] = pd.to_datetime(df['Date'])
+		return df
+	
 	soup1 = get_soup(ticker)
 	# Find the heading that precedes the table
 	heading = soup1.find('th', string=re.compile('PE Ratio Historical Data'))
 	# Find the table that follows this heading
 	table = heading.find_parent('table')
-	
 	# Extract headers
 	headers = []
 	for th in table.find_all('th'):
 		headers.append(th.text.strip())
-	
 	# Extract rows from the table body
 	rows = []
 	for tr in table.find('tbody').find_all('tr'):
 		cells = tr.find_all('td')
 		row = [cell.text.strip() for cell in cells]
 		rows.append(row)
-	
 	# Convert to DataFrame for easier manipulation
-	del headers[0] # 1st element is main header "PE Ratio Historical Data"
+	del headers[0]  # 1st element is main header "PE Ratio Historical Data"
 	df = pd.DataFrame(rows, columns=headers)
 	
 	# Clean data
@@ -65,10 +115,13 @@ def scrape_pe(ticker):
 	
 	# set data type for df
 	df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
-	df.sort_values('Date',ascending=False, inplace=True)
+	df.sort_values('Date', ascending=False, inplace=True)
 	df['Stock Price'] = df['Stock Price'].astype('float')
 	df['TTM Net EPS'] = df['TTM Net EPS'].astype('float')
 	df['PE Ratio'] = df['PE Ratio'].astype('float')
+	
+	# Save file to local
+	save_data_to_local(df.copy(), ticker)
 	return df
 
 def calculate_pe(df):
