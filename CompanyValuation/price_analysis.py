@@ -34,17 +34,17 @@ def calculate_rrg_tv(df, len=15):
     for stock in stock_columns:
         # Calculate RS (Relative Strength)
         rs = (df[stock] / df[index_column]) * 100
-        
-        # Calculate the Simple Moving Average (SMA) of RS
-        rs_ratio = rs.rolling(window=len).mean()
+        rs_ratio = rs.div(rs.iloc[0]).mul(100)
         
         # Calculate the Rate of Change (ROC) for rs_ratio
         rm_ratio = rs_ratio.pct_change(periods=len) * 100
-        
+       
+        #trading view way of normalisation
         # Normalize RS-Ratio (JDK RS-Ratio)
-        rs_ratio_mean = rs_ratio.rolling(window=len).mean()
-        rs_ratio_std = rs_ratio.rolling(window=len).std()
-        jdk_rs_ratio = 100 + ((rs_ratio - rs_ratio_mean) / rs_ratio_std) + 1
+        #rs_ratio = rs.rolling(window=len).mean()
+        #rs_ratio_mean = rs_ratio.rolling(window=len).mean()
+        #rs_ratio_std = rs_ratio.rolling(window=len).std()
+        #jdk_rs_ratio = 100 + ((rs_ratio - rs_ratio_mean) / rs_ratio_std) + 1
         
         # Normalize RM-Ratio (JDK RM-Ratio)
         rm_ratio_mean = rm_ratio.rolling(window=len).mean()
@@ -52,57 +52,43 @@ def calculate_rrg_tv(df, len=15):
         jdk_rm_ratio = 100 + ((rm_ratio - rm_ratio_mean) / rm_ratio_std) + 1
         
         # Store results for each stock
-        rs_ratios[f'{stock}_rs_ratio'] = jdk_rs_ratio
+        rs_ratios[f'{stock}_rs_ratio'] = rs_ratio
         rm_ratios[f'{stock}_rm_ratio'] = jdk_rm_ratio
     
     return rs_ratios, rm_ratios
 
+def weighted_moving_average(data, period):
+    # Function to calculate WMA (Weighted Moving Average)
+    weights = np.arange(1, period + 1)
+    return data.rolling(window=period).apply(lambda prices: np.dot(prices, weights) / weights.sum(), raw=True)
 
-
+def calculate_rrg(df, len=19):
+    stock_columns = df.columns[:-1]  # All columns except the last one
+    index_column = df.columns[-1]  # The last column is the benchmark index
+    
+    rs_ratios = pd.DataFrame()
+    rm_ratios = pd.DataFrame()
+    
+    for stock in stock_columns:
+        # Step 1: Calculate RS (Relative Strength)
+        rs = df[stock] / df[index_column]
+        
+        # Step 2: Calculate WMA of RS for normalization
+        wma_rs = weighted_moving_average(rs, len)
+        
+        # Step 3: Calculate RS-Ratio (normalized RS, TradingView style)
+        rs_ratio = weighted_moving_average(rs / wma_rs, len) * 100
+        
+        # Step 4: Calculate RS-Momentum (RM-Ratio)
+        rs_mom = (rs_ratio / weighted_moving_average(rs_ratio, len)) * 100
+        
+        # Store results for each stock
+        rs_ratios[f'{stock}_rs_ratio'] = rs_ratio
+        rm_ratios[f'{stock}_rm_ratio'] = rs_mom
+    
+    return rs_ratios, rm_ratios
 
 def plot_RRG(rs_ratio, rs_momentum):
-    fig, ax = plt.subplots(figsize=(8, 8))
-    
-    # Plot each stock's RS-Ratio and RS-Momentum
-    for stock in rs_ratio.columns:
-        stock_name = stock.replace('_rs_ratio', '')
-        
-        # Plot all points for the stock and connect them with lines
-        ax.plot(rs_ratio[stock], rs_momentum[f'{stock_name}_rm_ratio'], label=stock_name, marker='o')
-    
-    ax.set_xlabel('RS-Ratio')
-    ax.set_ylabel('RS-Momentum')
-    ax.set_title('RRG Chart')
-    
-    # Set dynamic axis limits based on the range of rs_ratio and rs_momentum data
-    x_min = rs_ratio.min().min() - 0.5
-    x_max = rs_ratio.max().max() + 0.5
-    y_min = rs_momentum.min().min() - 0.5
-    y_max = rs_momentum.max().max() + 0.5
-
-    ax.set_xlim(x_min, x_max)
-    ax.set_ylim(y_min, y_max)
-    
-    # Define RRG quadrants
-    ax.axhline(100, color='black', linewidth=1)
-    ax.axvline(100, color='black', linewidth=1)
-    
-    # Add quadrant labels dynamically based on axis limits
-    ax.text(x_max - (x_max - x_min) * 0.05, y_max - (y_max - y_min) * 0.05, 'Leading', fontsize=12, color='green',
-            ha='right', va='top')
-    ax.text(x_min + (x_max - x_min) * 0.05, y_max - (y_max - y_min) * 0.05, 'Weakening', fontsize=12, color='orange',
-            ha='left', va='top')
-    ax.text(x_min + (x_max - x_min) * 0.05, y_min + (y_max - y_min) * 0.05, 'Lagging', fontsize=12, color='red',
-            ha='left', va='bottom')
-    ax.text(x_max - (x_max - x_min) * 0.05, y_min + (y_max - y_min) * 0.05, 'Improving', fontsize=12, color='blue',
-            ha='right', va='bottom')
-    
-    plt.legend(loc='upper left')
-    plt.grid(True)
-    plt.show()
-
-
-def plot_RRG2(rs_ratio, rs_momentum):
     fig, ax = plt.subplots(figsize=(10, 10))
     
     # Plot each stock's RS-Ratio and RS-Momentum
@@ -140,14 +126,10 @@ def plot_RRG2(rs_ratio, rs_momentum):
     ax.axvline(100, color='black', linewidth=1)
     
     # Add quadrant labels dynamically based on axis limits
-    ax.text(x_max - (x_max - x_min) * 0.15, y_max - (y_max - y_min) * 0.05, 'Leading', fontsize=10, color='green',
-            ha='right', va='top')
-    ax.text(x_max - (x_max - x_min) * 0.15, y_min + (y_max - y_min) * 0.05, 'Weakening', fontsize=10, color='orange',
-            ha='left', va='top')
-    ax.text(x_min + (x_max - x_min) * 0.15, y_min + (y_max - y_min) * 0.05, 'Lagging', fontsize=10, color='red',
-            ha='left', va='bottom')
-    ax.text(x_min + (x_max - x_min) * 0.15, y_max - (y_max - y_min) * 0.05, 'Improving', fontsize=10, color='blue',
-            ha='right', va='bottom')
+    ax.text(x_max-0.1, y_max-0.1, 'Leading', fontsize=10, color='green', ha='right', va='top')
+    ax.text(x_max-0.8, y_min+0.1, 'Weakening', fontsize=10, color='orange', ha='right', va='bottom')
+    ax.text(x_min+0.1, y_min+0.1, 'Lagging', fontsize=10, color='red', ha='left', va='bottom')
+    ax.text(x_min+0.1, y_max-0.1, 'Improving', fontsize=10, color='blue', ha='left', va='top')
     
     # Add the legend with small font size
     plt.legend(loc='lower right', fontsize='small')
@@ -158,7 +140,8 @@ def plot_RRG2(rs_ratio, rs_momentum):
 
 def main():
     #stock_list = ['AMD','NVDA','AMZN','GOOGL','SPY']
-    stock_list = ['AMD','GOOGL','AMZN','PLTR','FTNT','NVDA','SPY']
+    #stock_list = ['AMD','PFE','GOOGL','AMZN','PLTR','FTNT','NVDA','TLT','KWEB','SPY']
+    stock_list = ['XLB','XLC','XLE','XLF','XLI','XLK','XLP','XLRE','XLU','XLV','XLY','SMH','XRT','GLD','SLV','SPY']
     prices_df = pd.DataFrame()
     for stock in stock_list:
         df = get_prices(stock)
@@ -174,10 +157,10 @@ def main():
     #plt.show()
     
     # Using Tradingview script algo
-    rs_ratio1, rs_momentum1 = calculate_rrg_tv(prices_df)
-    plot_RRG2(rs_ratio1.iloc[-11:],rs_momentum1.iloc[-11:])
-    ticker = 'TLT'
-    show_stock_plot(prices_df, rs_momentum1, rs_ratio1, ticker)
+    rs_ratio, rs_momentum = calculate_rrg(prices_df)
+    plot_RRG(rs_ratio.iloc[-6:],rs_momentum.iloc[-6:])
+    ticker = 'XLF'
+    show_stock_plot(prices_df, rs_momentum, rs_ratio, ticker)
 
 
 def show_stock_plot(prices_df, rs_momentum1, rs_ratio1, ticker):
