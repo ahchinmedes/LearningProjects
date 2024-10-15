@@ -91,6 +91,12 @@ def calculate_rrg(df, len=19):
 def plot_RRG(rs_ratio, rs_momentum):
     fig, ax = plt.subplots(figsize=(10, 10))
     
+    # Define the quadrant colors
+    leading_color = 'lightgreen'
+    weakening_color = 'lightyellow'
+    lagging_color = 'lightcoral'
+    improving_color = 'lightblue'
+    
     # Plot each stock's RS-Ratio and RS-Momentum
     for stock in rs_ratio.columns:
         stock_name = stock.replace('_rs_ratio', '')
@@ -110,7 +116,7 @@ def plot_RRG(rs_ratio, rs_momentum):
     # Set axis labels and title
     ax.set_xlabel('RS-Ratio')
     ax.set_ylabel('RS-Momentum')
-    ax.set_title('RRG Chart')
+    ax.set_title(f'RRG Chart ({rs_ratio.index[-1].strftime('%d/%m/%Y')})')
     
     # Set dynamic axis limits based on the range of rs_ratio and rs_momentum data
     x_min = rs_ratio.min().min() - 0.5
@@ -125,9 +131,15 @@ def plot_RRG(rs_ratio, rs_momentum):
     ax.axhline(100, color='black', linewidth=1)
     ax.axvline(100, color='black', linewidth=1)
     
+    # Fill the quadrants with respective colors
+    ax.fill_betweenx([100, y_max], 100, x_max, color=leading_color, alpha=0.2)  # Leading quadrant
+    ax.fill_betweenx([y_min, 100], 100, x_max, color=weakening_color, alpha=0.2)  # Weakening quadrant
+    ax.fill_betweenx([y_min, 100], x_min, 100, color=lagging_color, alpha=0.2)  # Lagging quadrant
+    ax.fill_betweenx([100, y_max], x_min, 100, color=improving_color, alpha=0.2)  # Improving quadrant
+    
     # Add quadrant labels dynamically based on axis limits
     ax.text(x_max-0.1, y_max-0.1, 'Leading', fontsize=10, color='green', ha='right', va='top')
-    ax.text(x_max-0.8, y_min+0.1, 'Weakening', fontsize=10, color='orange', ha='right', va='bottom')
+    ax.text(x_max-1.2, y_min+0.1, 'Weakening', fontsize=10, color='orange', ha='right', va='bottom')
     ax.text(x_min+0.1, y_min+0.1, 'Lagging', fontsize=10, color='red', ha='left', va='bottom')
     ax.text(x_min+0.1, y_max-0.1, 'Improving', fontsize=10, color='blue', ha='left', va='top')
     
