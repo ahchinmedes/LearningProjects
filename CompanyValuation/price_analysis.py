@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from matplotlib.pyplot import subplots
 
 import alpha_api as alpha
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+
 
 def get_prices(ticker):
     data = alpha.get_price(ticker)
@@ -102,17 +105,47 @@ def plot_RRG(rs_ratio, rs_momentum):
         stock_name = stock.replace('_rs_ratio', '')
         
         # Plot all points for the stock and connect them with lines
-        ax.plot(rs_ratio[stock], rs_momentum[f'{stock_name}_rm_ratio'], label=stock_name, marker='o')
-        
+        line, = ax.plot(rs_ratio[stock], rs_momentum[f'{stock_name}_rm_ratio'], label=stock_name, marker='o')
+        # Retrieve the color used in the original plot
+        stock_color = line.get_color()
+        # Highlight the last point with a larger marker
+        ax.plot(rs_ratio[stock].iloc[-1], rs_momentum[f'{stock_name}_rm_ratio'].iloc[-1],
+                marker='o', markersize=12, color=stock_color)
+
         # Add arrows for transition between points (days)
         for i in range(len(rs_ratio[stock]) - 1):
             ax.annotate('', xy=(rs_ratio[stock].iloc[i + 1], rs_momentum[f'{stock_name}_rm_ratio'].iloc[i + 1]),
                         xytext=(rs_ratio[stock].iloc[i], rs_momentum[f'{stock_name}_rm_ratio'].iloc[i]),
                         arrowprops=dict(arrowstyle="->", color='gray', lw=1))
-        # Add the stock name with spacing at the last point
-        #text_x = rs_ratio[stock].iloc[-1] + 0.2  # Shift name 0.5 units to the right
-        #text_y = rs_momentum[f'{stock_name}_rm_ratio'].iloc[-1] + 0.2  # Shift name 0.5 units upward
-        #ax.text(text_x, text_y, stock_name, fontsize=10, color='black', ha='center', va='center')
+            
+        # Determine where the text should be placed based on the sector
+        last_rs_ratio = rs_ratio[stock].iloc[-1]
+        last_rm_ratio = rs_momentum[f'{stock_name}_rm_ratio'].iloc[-1]
+        # Shift based on the sector
+        if last_rs_ratio >= 100 and last_rm_ratio >= 100:  # Leading sector
+            text_x = last_rs_ratio + 0.0  # Shift name to the right
+            text_y = last_rm_ratio - 0.0  # Shift name downwards
+            ha = 'right'
+            va = 'bottom'
+        elif last_rs_ratio < 100 and last_rm_ratio >= 100:  # Improving sector
+            text_x = last_rs_ratio - 0.0  # Shift name to the left
+            text_y = last_rm_ratio + 0.0  # Shift name upwards
+            ha = 'left'
+            va = 'top'
+        elif last_rs_ratio < 100 and last_rm_ratio < 100:  # Lagging sector
+            text_x = last_rs_ratio - 0.0  # Shift name to the left
+            text_y = last_rm_ratio + 0.0  # Shift name upwards
+            ha = 'left'
+            va = 'top'
+        else:  # Weakening sector (last_rs_ratio >= 100 and last_rm_ratio < 100)
+            text_x = last_rs_ratio + 0.0  # Shift name to the right
+            text_y = last_rm_ratio - 0.0  # Shift name downwards
+            ha = 'right'
+            va = 'bottom'
+        
+        # Add the stock name at the last point
+        ax.text(text_x, text_y, stock_name, fontsize=10, color='black', ha=ha, va=va)
+        
     # Set axis labels and title
     ax.set_xlabel('RS-Ratio')
     ax.set_ylabel('RS-Momentum')
@@ -148,31 +181,25 @@ def plot_RRG(rs_ratio, rs_momentum):
     plt.grid(True)
     
     # Show the plot
+    date = datetime.today().strftime('%Y_%m_%d')
+    plt.savefig(f'RRG/{date} - Index_RRG', dpi=600)
     plt.show()
 
 def main():
     #stock_list = ['AMD','NVDA','AMZN','GOOGL','SPY']
-    #stock_list = ['AMD','PFE','GOOGL','AMZN','PLTR','FTNT','NVDA','TLT','KWEB','SPY']
-    stock_list = ['XLB','XLC','XLE','XLF','XLI','XLK','XLP','XLRE','XLU','XLV','XLY','SMH','XRT','GLD','SLV','SPY']
+    stock_list = ['AMD','PFE','APA','SLB','XLE','FTNT','NVDA','PLTR','TLT','SPY']
+    indices = ['XLB','XLC','XLE','XLF','XLI','XLK','XLP','XLRE','XLU','XLV','XLY','SMH','XRT','GLD','SLV','INDA','JETS','SPY']
     prices_df = pd.DataFrame()
     for stock in stock_list:
         df = get_prices(stock)
         prices_df[stock] = df['4. close']
-    prices_df = data_clean(prices_df,90)
-    #rs_ratio, norm_price = cal_RS_Ratio(prices_df)
-    # Then calculate RS-Momentum based on RS-Ratio
-    #rs_momentum = cal_RS_Momentum(rs_ratio)
-    # Plot RRG chart
-    #plot_RRG(rs_ratio.iloc[-10:], rs_momentum.iloc[-10:])
-    #rs_ratio.plot()
-    #norm_price.plot()
-    #plt.show()
+    prices_df = data_clean(prices_df,95)
     
     # Using Tradingview script algo
     rs_ratio, rs_momentum = calculate_rrg(prices_df)
-    plot_RRG(rs_ratio.iloc[-6:],rs_momentum.iloc[-6:])
-    ticker = 'XLF'
-    show_stock_plot(prices_df, rs_momentum, rs_ratio, ticker)
+    plot_RRG(rs_ratio.iloc[-10:],rs_momentum.iloc[-10:])
+    #ticker = 'SLB'
+    #show_stock_plot(prices_df, rs_momentum, rs_ratio, ticker)
 
 
 def show_stock_plot(prices_df, rs_momentum1, rs_ratio1, ticker):
