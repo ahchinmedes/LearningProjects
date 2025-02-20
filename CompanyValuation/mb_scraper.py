@@ -78,7 +78,7 @@ def get_stock_forecast(ticker):
     rows = []
     for row in table.find_all('tr')[1:]:  # Skip the header row
         cols = [col.text.strip() for col in row.find_all('td')]
-        if cols:
+        if cols and len(cols) == 8:
             rows.append(cols)
 
     # Create a DataFrame from the table data
@@ -137,6 +137,7 @@ def scrape_eps_estimates(ticker):
     
     # Data cleaning
     df['Average Estimate'] = df['Average Estimate'].replace({r'\$': '', '': 0}, regex=True)
+    df['Average Estimate'] = df['Average Estimate'].str.replace(r'\((\d+\.\d+)\)', r'-\1', regex=True) #convert (1.65) to -1.65
     df['Average Estimate'] = df['Average Estimate'].astype('float')
     return df
 
@@ -161,7 +162,7 @@ def get_eps(ticker, year):
 
 def main():
  #print(scrape_eps_estimates('BABA'))
- print(get_eps('AMZN','2024'))
+ print(get_stock_forecast('MSFT'))
 
 if __name__ == '__main__':
     main()
